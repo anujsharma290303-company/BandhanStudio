@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import Quotation, { LineItem, DiscountType, GstType } from '../models/Quotation';
 import Bill from '../models/Bill';
-import { calculateQuotationTotals } from '../utils/qutationCalc'
+import Client from '../models/Client';
+import { calculateQuotationTotals } from '../utils/qutationCalc';
 
 function getQuotationId(req: Request): string | undefined {
 	return typeof req.params.id === 'string' ? req.params.id : undefined;
@@ -11,7 +12,11 @@ export async function listQuotations(req: Request, res: Response) {
 	try {
 		const clientId = typeof req.query.clientId === 'string' ? req.query.clientId : undefined;
 		const where = clientId ? { clientId } : {};
-		const quotations = await Quotation.findAll({ where, order: [['createdAt', 'DESC']] });
+		const quotations = await Quotation.findAll({
+			where,
+			include: [{ model: Client, attributes: ['id', 'name', 'phone'] }],
+			order: [['createdAt', 'DESC']],
+		});
 		return res.json({ quotations });
 	} catch {
 		return res.status(500).json({ error: 'Failed to fetch quotations' });
@@ -23,7 +28,9 @@ export async function getQuotation(req: Request, res: Response) {
 	if (!id) return res.status(400).json({ error: 'Invalid quotation id' });
 
 	try {
-		const quotation = await Quotation.findByPk(id);
+		const quotation = await Quotation.findByPk(id, {
+			include: [{ model: Client, attributes: ['id', 'name', 'phone'] }],
+		});
 		if (!quotation) return res.status(404).json({ error: 'Quotation not found' });
 		return res.json({ quotation });
 	} catch {

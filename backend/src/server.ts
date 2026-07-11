@@ -12,10 +12,17 @@ import clientRoutes from './routes/clientRoutes';
 import quotationRoutes from './routes/quotationRoutes';
 import eventPackageRoutes from './routes/eventPackageRoutes';
 
+import cors from 'cors';
+
+
 const app = express();
 const PORT = 4000;
-
+app.use(cors({
+	origin: 'http://localhost:5173',
+	credentials: true,
+}));
 app.use(express.json());
+
 
 // Optional: logs every incoming request, useful while debugging routes.
 // Safe to remove once things are stable.
